@@ -1,6 +1,6 @@
 //
 //  Modal.m
-//  v.1.1
+//  v.1.2
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.
@@ -113,14 +113,22 @@
         [window.rootViewController
          presentViewController:navigationController
          animated:item.animated
-         completion:completion];
+         completion:^
+        {
+            if (completion)
+                completion(nil);
+        }];
     }
     
     else
         [window.rootViewController
          presentViewController:item.controller
          animated:item.animated
-         completion:completion];
+         completion:^
+        {
+            if (completion)
+                completion(nil);
+        }];
 }
 
 -(void)startTimer
@@ -159,6 +167,38 @@
     self.timer = nil;
 }
 
+-(void)showStoryboardClass:(Class             )storyboardClass
+                   options:(ModalOptions      )options
+                completion:(ModalCompletion   )completion
+{
+    UIStoryboard *storyboard =
+    [UIStoryboard storyboardWithName:@"Main"
+                              bundle:nil];
+    
+    if (storyboard == nil)
+        storyboard =
+        [UIStoryboard storyboardWithName:@"MainStoryboard"
+                                  bundle:nil];
+    
+    if (storyboard == nil)
+    {
+        if (completion)
+            completion([NSError
+                        errorWithDomain:@"Modal"
+                        code:-1
+                        userInfo:@{NSLocalizedDescriptionKey:@"Storyboard not found!"}]);
+        
+        return;
+    }
+    
+    UIViewController *controller =
+    [storyboard instantiateViewControllerWithIdentifier:NSStringFromClass(storyboardClass)];
+    
+    [self showViewController:controller
+                     options:options
+                  completion:completion];
+}
+
 -(void)showViewController:(UIViewController *)viewController
                   options:(ModalOptions      )options
                completion:(ModalCompletion   )completion;
@@ -186,7 +226,7 @@
         [self.showedItems addObject:item];
         
         [self showWindowWithItem:item
-                      completion:^
+                      completion:^(NSError *error)
         {
             if (ENABLE_LOG)
             {
@@ -196,7 +236,7 @@
             }
 
             if (item.completion)
-                item.completion();
+                item.completion(nil);
 
             self.progress = NO;
             
@@ -263,7 +303,7 @@
     [self.waitingItems removeObject:item];
     
     [self showWindowWithItem:item
-                  completion:^
+                  completion:^(NSError *error)
     {
          if (ENABLE_LOG)
          {
@@ -273,7 +313,7 @@
          }
          
          if (item.completion)
-             item.completion();
+             item.completion(nil);
          
          self.progress = NO;
      }];

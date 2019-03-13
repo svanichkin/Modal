@@ -1,6 +1,6 @@
 //
 //  Modal.h
-//  v.1.1
+//  v.1.2
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.
@@ -25,14 +25,19 @@ typedef enum
     ModalOptionNavigationHidden     = 1 << 3
 } ModalOptions;
 
-typedef void(^ModalCompletion)(void);
+typedef void(^ModalCompletion)(NSError *error);
 
 @interface Modal : NSObject
 
 +(instancetype)current;
 
--(void)showViewController:(UIViewController *)viewController
-                  options:(ModalOptions      )options
-               completion:(ModalCompletion   )completion;
+-(void)showViewController:(UIViewController  *)viewController
+                  options:(ModalOptions       )options
+               completion:(ModalCompletion    )completion;
+
+-(void)showStoryboardClass:(Class             )storyboardClass
+                   options:(ModalOptions      )options
+                completion:(ModalCompletion   )completion;
+
 
 @end
