@@ -1,6 +1,6 @@
 //
 //  Modal.m
-//  v.1.5
+//  v.1.6
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.
@@ -277,14 +277,16 @@
     self.timer = nil;
 }
 
--(void)showViewController:(UIViewController *)viewController
++(void)showViewController:(UIViewController *)viewController
                   options:(ModalOptions      )options
                completion:(ModalCompletion   )completion;
 {
     if (viewController == nil)
         return;
+    
+    Modal *modal = Modal.current;
  
-    self.progress = YES;
+    modal.progress = YES;
     
     ModalItem *item =
     ModalItem.new;
@@ -299,40 +301,40 @@
     // Если в очереди ещё нет контроллера из очедери ожидания
     // или нужно немедленно отобразить контроллер
     if (item.query             == NO ||
-        self.waitingItemShowed == NO)
+        modal.waitingItemShowed == NO)
     {
-        [self.showedItems addObject:item];
+        [modal.showedItems addObject:item];
         
-        [self showWindowWithItem:item
-                      completion:^
+        [modal showWindowWithItem:item
+                       completion:^
         {
             if (ENABLE_LOG)
                 NSLog(@"\nNew showed item: %@\nItems waiting: %@\nShowed items: %@",
                       item,
-                      self.waitingItems,
-                      self.showedItems);
+                      modal.waitingItems,
+                      modal.showedItems);
 
             if (item.completion)
                 item.completion();
 
-            self.progress = NO;
+            modal.progress = NO;
             
-            if (self.showedItems.count)
-                [self startTimer];
+            if (modal.showedItems.count)
+                [modal startTimer];
         }];
 
         return;
     }
 
-    [self.waitingItems addObject:item];
+    [modal.waitingItems addObject:item];
 
     if (ENABLE_LOG)
         NSLog(@"\nNew waiting item: %@\nItems waiting: %@\nShowed items: %@",
               item,
-              self.waitingItems,
-              self.showedItems);
+              modal.waitingItems,
+              modal.showedItems);
 
-    self.progress = NO;
+    modal.progress = NO;
 }
 
 -(void)refreshDismissedItems:(NSArray *)dismissedItems

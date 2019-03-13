@@ -1,6 +1,6 @@
 //
 //  Modal.h
-//  v.1.5
+//  v.1.6
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.
@@ -72,9 +72,7 @@ typedef void(^ModalCompletion)(void);
 
 @interface Modal : NSObject
 
-+(instancetype)current;
-
--(void)showViewController:(UIViewController  *)viewController
++(void)showViewController:(UIViewController  *)viewController
                   options:(ModalOptions       )options
                completion:(ModalCompletion    )completion;
 
