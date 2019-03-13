@@ -1,14 +1,36 @@
 //
 //  Modal.m
-//  v.1.4
+//  v.1.5
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.
 //
 
 #import "Modal.h"
+#import <objc/runtime.h>
 
-#define ENABLE_LOG NO
+#define ENABLE_LOG YES
+
+@implementation UIView (ProxyUserInteraction)
+
+-(void)setProxyUserInteractionEnabled:(BOOL)proxyUserInteractionEnabled
+{
+    objc_setAssociatedObject(self,
+                             @"proxyUserInteractionEnabled",
+                             @(proxyUserInteractionEnabled),
+                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+-(BOOL)proxyUserInteractionEnabled
+{
+    NSNumber *enabled =
+    objc_getAssociatedObject(self,
+                             @"proxyUserInteractionEnabled");
+    
+    return enabled.boolValue;
+}
+
+@end
 
 @implementation UIViewController (Storyboard)
 
@@ -24,13 +46,29 @@
                                   bundle:nil];
     
     if (storyboard == nil)
+    {
+        if (ENABLE_LOG)
+            NSLog(@"Error in newFromStoryboard. Storyboard not found.");
+        
         return nil;
+    }
     
     NSString *identifier =
     NSStringFromClass(self);
     
-    return
+    UIViewController *controller =
     [storyboard instantiateViewControllerWithIdentifier:identifier];
+    
+    if (controller == nil)
+    {
+        if (ENABLE_LOG)
+            NSLog(@"\nError in newFromStoryboard. Identifier %@ not found on stroryboard.",
+                  identifier);
+        
+        return nil;
+    }
+    
+    return controller;
 }
 
 @end
@@ -42,6 +80,7 @@
 @property (nonatomic, assign) BOOL              query;
 @property (nonatomic, assign) BOOL              navigation;
 @property (nonatomic, assign) BOOL              navigationHidden;
+@property (nonatomic, assign) BOOL              proxyUserInteraction;
 @property (nonatomic, strong) UIViewController *controller;
 
 @end
@@ -58,6 +97,60 @@
      self.navigation       ? @"YES" : @"NO",
      self.navigationHidden ? @"YES" : @"NO",
      self.completion];
+}
+
+@end
+
+@interface ProxyWindow : UIWindow
+@end
+
+@implementation ProxyWindow
+
+-(UIView *)hitTest:(CGPoint  )point
+         withEvent:(UIEvent *)event
+{
+    UIView *view =
+    [super hitTest:point
+         withEvent:event];
+    
+    if (view.proxyUserInteractionEnabled == NO)
+        return view;
+    
+    view =
+    [self proxedSuperviewWithView:view];
+
+    if (view.superview == nil ||
+        (view.superview != self &&
+         [self.subviews containsObject:view.superview]) == NO)
+        return view;
+    
+    NSInteger index =
+    [UIApplication.sharedApplication.windows indexOfObject:self];
+    
+    if (index - 1 < 0)
+        return
+        view;
+    
+    UIWindow *window =
+    UIApplication.sharedApplication.windows[index - 1];
+    
+    return
+    [window hitTest:point
+          withEvent:event];
+}
+
+-(UIView *)proxedSuperviewWithView:(UIView *)view
+{
+    UIView *superview = view.superview;
+    
+    if (superview == nil)
+        return view;
+    
+    if (superview.proxyUserInteractionEnabled)
+        return
+        [self proxedSuperviewWithView:view];
+    
+    return view;
 }
 
 @end
@@ -108,8 +201,8 @@
 -(void)showWindowWithItem:(ModalItem     *)item
                completion:(ModalCompletion)completion
 {
-    UIWindow *window =
-    UIWindow.new;
+    ProxyWindow *window =
+    ProxyWindow.new;
     
     window.backgroundColor =
     UIColor.clearColor;
@@ -138,22 +231,14 @@
         [window.rootViewController
          presentViewController:navigationController
          animated:item.animated
-         completion:^
-        {
-            if (completion)
-                completion();
-        }];
+         completion:completion];
     }
     
     else
         [window.rootViewController
          presentViewController:item.controller
          animated:item.animated
-         completion:^
-        {
-            if (completion)
-                completion();
-        }];
+         completion:completion];
 }
 
 -(void)startTimer
@@ -222,11 +307,10 @@
                       completion:^
         {
             if (ENABLE_LOG)
-            {
-                NSLog(@"New showed item: %@", item);
-                NSLog(@"Items waiting: %@", self.waitingItems);
-                NSLog(@"Showed items: %@", self.showedItems);
-            }
+                NSLog(@"\nNew showed item: %@\nItems waiting: %@\nShowed items: %@",
+                      item,
+                      self.waitingItems,
+                      self.showedItems);
 
             if (item.completion)
                 item.completion();
@@ -243,11 +327,10 @@
     [self.waitingItems addObject:item];
 
     if (ENABLE_LOG)
-    {
-        NSLog(@"New waiting item: %@", item);
-        NSLog(@"Items waiting: %@", self.waitingItems);
-        NSLog(@"Showed items: %@", self.showedItems);
-    }
+        NSLog(@"\nNew waiting item: %@\nItems waiting: %@\nShowed items: %@",
+              item,
+              self.waitingItems,
+              self.showedItems);
 
     self.progress = NO;
 }
@@ -256,15 +339,14 @@
 {
     self.progress = YES;
     
-    if (ENABLE_LOG)
-    {
-        NSLog(@"New items dismissed: %@", dismissedItems);
-        NSLog(@"Items waiting: %@", self.waitingItems);
-        NSLog(@"Showed items: %@", self.showedItems);
-    }
-
     // Удалим из очереди
     [self.showedItems removeObjectsInArray:dismissedItems];
+    
+    if (ENABLE_LOG)
+        NSLog(@"\nNew items dismissed: %@\nItems waiting: %@\nShowed items: %@",
+              dismissedItems,
+              self.waitingItems,
+              self.showedItems);
 
     // Если в очереди ожидания есть ожидающие показа
     // но, если уже отображается один из них, ничего не делаем
@@ -292,6 +374,13 @@
     ModalItem *item =
     self.waitingItems.firstObject;
     
+    if (item == nil)
+    {
+        self.progress = NO;
+        
+        return;
+    }
+    
     [self.showedItems     addObject:item];
     [self.waitingItems removeObject:item];
     
@@ -299,12 +388,11 @@
                   completion:^
     {
          if (ENABLE_LOG)
-         {
-             NSLog(@"New showed item: %@", item);
-             NSLog(@"Items waiting: %@", self.waitingItems);
-             NSLog(@"Showed items: %@", self.showedItems);
-         }
-         
+             NSLog(@"\nNew showed item: %@\nItems waiting: %@\nShowed items: %@",
+                   item,
+                   self.waitingItems,
+                   self.showedItems);
+        
          if (item.completion)
              item.completion();
          
