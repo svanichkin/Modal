@@ -1,6 +1,6 @@
 //
 //  Modal.m
-//  v.1.3
+//  v.1.4
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.
@@ -9,6 +9,31 @@
 #import "Modal.h"
 
 #define ENABLE_LOG NO
+
+@implementation UIViewController (Storyboard)
+
++(instancetype)newFromStoryboard
+{
+    UIStoryboard *storyboard =
+    [UIStoryboard storyboardWithName:@"Main"
+                              bundle:nil];
+    
+    if (storyboard == nil)
+        storyboard =
+        [UIStoryboard storyboardWithName:@"MainStoryboard"
+                                  bundle:nil];
+    
+    if (storyboard == nil)
+        return nil;
+    
+    NSString *identifier =
+    NSStringFromClass(self);
+    
+    return
+    [storyboard instantiateViewControllerWithIdentifier:identifier];
+}
+
+@end
 
 @interface ModalItem : NSObject
 
@@ -116,7 +141,7 @@
          completion:^
         {
             if (completion)
-                completion(nil);
+                completion();
         }];
     }
     
@@ -127,7 +152,7 @@
          completion:^
         {
             if (completion)
-                completion(nil);
+                completion();
         }];
 }
 
@@ -167,57 +192,6 @@
     self.timer = nil;
 }
 
--(void)showStoryboardClass:(Class             )storyboardClass
-                   options:(ModalOptions      )options
-                completion:(ModalCompletion   )completion
-{
-    UIStoryboard *storyboard =
-    [UIStoryboard storyboardWithName:@"Main"
-                              bundle:nil];
-    
-    if (storyboard == nil)
-        storyboard =
-        [UIStoryboard storyboardWithName:@"MainStoryboard"
-                                  bundle:nil];
-    
-    if (storyboard == nil)
-    {
-        if (completion)
-            completion([NSError
-                        errorWithDomain:@"Modal"
-                        code:-1
-                        userInfo:@{NSLocalizedDescriptionKey:@"Storyboard not found!"}]);
-        
-        return;
-    }
-    
-    NSString *identifier =
-    NSStringFromClass(storyboardClass);
-    
-    UIViewController *controller =
-    [storyboard instantiateViewControllerWithIdentifier:identifier];
-    
-    if (controller == nil)
-    {
-        if (completion)
-        {
-            NSString *errorDescription =
-            [NSString stringWithFormat:@"Controller with identifier '%@' not found!", identifier];
-            
-            completion([NSError
-                        errorWithDomain:@"Modal"
-                        code:-1
-                        userInfo:@{NSLocalizedDescriptionKey:errorDescription}]);
-        }
-        
-        return;
-    }
-    
-    [self showViewController:controller
-                     options:options
-                  completion:completion];
-}
-
 -(void)showViewController:(UIViewController *)viewController
                   options:(ModalOptions      )options
                completion:(ModalCompletion   )completion;
@@ -245,7 +219,7 @@
         [self.showedItems addObject:item];
         
         [self showWindowWithItem:item
-                      completion:^(NSError *error)
+                      completion:^
         {
             if (ENABLE_LOG)
             {
@@ -255,7 +229,7 @@
             }
 
             if (item.completion)
-                item.completion(nil);
+                item.completion();
 
             self.progress = NO;
             
@@ -322,7 +296,7 @@
     [self.waitingItems removeObject:item];
     
     [self showWindowWithItem:item
-                  completion:^(NSError *error)
+                  completion:^
     {
          if (ENABLE_LOG)
          {
@@ -332,7 +306,7 @@
          }
          
          if (item.completion)
-             item.completion(nil);
+             item.completion();
          
          self.progress = NO;
      }];
