@@ -1,6 +1,6 @@
 //
 //  Modal.m
-//  v.1.2
+//  v.1.3
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.
@@ -191,8 +191,27 @@
         return;
     }
     
+    NSString *identifier =
+    NSStringFromClass(storyboardClass);
+    
     UIViewController *controller =
-    [storyboard instantiateViewControllerWithIdentifier:NSStringFromClass(storyboardClass)];
+    [storyboard instantiateViewControllerWithIdentifier:identifier];
+    
+    if (controller == nil)
+    {
+        if (completion)
+        {
+            NSString *errorDescription =
+            [NSString stringWithFormat:@"Controller with identifier '%@' not found!", identifier];
+            
+            completion([NSError
+                        errorWithDomain:@"Modal"
+                        code:-1
+                        userInfo:@{NSLocalizedDescriptionKey:errorDescription}]);
+        }
+        
+        return;
+    }
     
     [self showViewController:controller
                      options:options
