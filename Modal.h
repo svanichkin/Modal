@@ -1,6 +1,6 @@
 //
 //  Modal.h
-//  v.1.6
+//  v.1.8
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.
@@ -65,7 +65,8 @@ typedef enum
     ModalOptionNoAnimated                = 1 << 0,
     ModalOptionQuery                     = 1 << 1,
     ModalOptionNavigation                = 1 << 2,
-    ModalOptionNavigationHidden          = 1 << 3
+    ModalOptionNavigationHidden          = 1 << 3,
+    ModalOptionAlwaysOnTop               = 1 << 4,
 } ModalOptions;
 
 typedef void(^ModalCompletion)(void);

@@ -1,6 +1,6 @@
 //
 //  Modal.m
-//  v.1.6
+//  v.1.8
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.
@@ -9,7 +9,7 @@
 #import "Modal.h"
 #import <objc/runtime.h>
 
-#define ENABLE_LOG YES
+#define ENABLE_LOG NO
 
 @implementation UIView (ProxyUserInteraction)
 
@@ -81,6 +81,7 @@
 @property (nonatomic, assign) BOOL              navigation;
 @property (nonatomic, assign) BOOL              navigationHidden;
 @property (nonatomic, assign) BOOL              proxyUserInteraction;
+@property (nonatomic, assign) BOOL              alwaysOnTop;
 @property (nonatomic, strong) UIViewController *controller;
 
 @end
@@ -90,12 +91,13 @@
 -(NSString *)description
 {
     return
-    [NSString stringWithFormat:@"{controller: %@, animated: %@, query: %@, navigation: %@, navigationHidden: %@, completion:%@}",
+    [NSString stringWithFormat:@"{controller: %@, animated: %@, query: %@, navigation: %@, navigationHidden: %@, completion:%@, alwaysOnTop:%@}",
      self.controller,
      self.animated         ? @"YES" : @"NO",
      self.query            ? @"YES" : @"NO",
      self.navigation       ? @"YES" : @"NO",
      self.navigationHidden ? @"YES" : @"NO",
+     self.alwaysOnTop      ? @"YES" : @"NO",
      self.completion];
 }
 
@@ -207,15 +209,11 @@
     window.backgroundColor =
     UIColor.clearColor;
     
+    window.windowLevel = self.maxZOrder + 1;
+    
     [window makeKeyAndVisible];
     
-    NSInteger maxZOrder = NSIntegerMin;
-    
-    for (UIWindow *w in UIApplication.sharedApplication.windows)
-        if (w.windowLevel > maxZOrder && w != window)
-            maxZOrder = window.windowLevel;
-    
-    window.windowLevel = maxZOrder + 1;
+    [self arrageZOrders];
     
     window.rootViewController =
     UIViewController.new;
@@ -239,6 +237,54 @@
          presentViewController:item.controller
          animated:item.animated
          completion:completion];
+    
+    // Так же нужно учесть уже отображающиеся окна с AlwayOnTop,
+    // т.е. такие окна, которые должны быть показаны выше текущих
+    
+    NSMutableArray *showedInverse = self.showedItems.reverseObjectEnumerator.allObjects.mutableCopy;
+    
+    for (ModalItem *modalItem in showedInverse)
+        if (modalItem.alwaysOnTop)
+            [self windowOnView:modalItem.controller.view].windowLevel =
+            self.maxZOrder + 1;
+    
+    [self arrageZOrders];
+}
+
+-(UIWindow *)windowOnView:(UIView *)view
+{
+    if (view == nil)
+        return nil;
+    
+    if (view.window)
+        return
+        view.window;
+    
+    return
+    [self windowOnView:view.superview];
+}
+
+-(NSInteger)maxZOrder
+{
+    NSInteger maxZOrder = NSIntegerMin;
+    
+    for (UIWindow *w in UIApplication.sharedApplication.windows)
+        if (w.windowLevel > maxZOrder)
+            maxZOrder = w.windowLevel;
+    
+    return maxZOrder;
+}
+
+-(void)arrageZOrders
+{
+    NSInteger i = 0;
+    
+    for (UIWindow *window in UIApplication.sharedApplication.windows)
+    {
+        window.windowLevel = i;
+        
+        i ++;
+    }
 }
 
 -(void)startTimer
@@ -295,12 +341,13 @@
     item.query             = options & ModalOptionQuery;
     item.navigation        = options & ModalOptionNavigation;
     item.navigationHidden  = options & ModalOptionNavigationHidden;
+    item.alwaysOnTop       = options & ModalOptionAlwaysOnTop;
     item.completion        = completion;
     item.controller        = viewController;
 
     // Если в очереди ещё нет контроллера из очедери ожидания
     // или нужно немедленно отобразить контроллер
-    if (item.query             == NO ||
+    if (item.query              == NO ||
         modal.waitingItemShowed == NO)
     {
         [modal.showedItems addObject:item];
@@ -343,6 +390,8 @@
     
     // Удалим из очереди
     [self.showedItems removeObjectsInArray:dismissedItems];
+    
+    [self arrageZOrders];
     
     if (ENABLE_LOG)
         NSLog(@"\nNew items dismissed: %@\nItems waiting: %@\nShowed items: %@",
