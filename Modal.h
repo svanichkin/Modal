@@ -1,6 +1,6 @@
 //
 //  Modal.h
-//  v.1.8
+//  v.1.9
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.

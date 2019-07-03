@@ -1,6 +1,6 @@
 //
 //  Modal.m
-//  v.1.8
+//  v.1.9
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.
@@ -9,7 +9,7 @@
 #import "Modal.h"
 #import <objc/runtime.h>
 
-#define ENABLE_LOG NO
+#define ENABLE_LOG YES
 
 @implementation UIView (ProxyUserInteraction)
 
@@ -160,14 +160,17 @@
 @interface Modal ()
 
 // здесь контроллеры ожидающие показа (query YES)
-@property (nonatomic, strong) NSMutableArray <ModalItem *> *waitingItems;
+@property (nonatomic, strong) NSMutableArray <ModalItem *>   *waitingItems;
 
 // здесь контроллеры уже отображенные
-@property (nonatomic, strong) NSMutableArray <ModalItem *> *showedItems;
+@property (nonatomic, strong) NSMutableArray <ModalItem *>   *showedItems;
 
 // определение закрытых окон по таймеру (увы решения лучше пока не найдено)
-@property (nonatomic, strong) NSTimer                      *timer;
-@property (nonatomic, assign) BOOL                          progress;
+@property (nonatomic, strong) NSTimer                        *timer;
+@property (nonatomic, assign) BOOL                            progress;
+
+// здесь жесткие ссылки на окна
+@property (nonatomic, strong) NSMutableArray <ProxyWindow *> *windows;
 
 @end
 
@@ -195,6 +198,9 @@
         
         self.showedItems =
         NSMutableArray.new;
+        
+        self.windows =
+        NSMutableArray.new;
     }
     
     return self;
@@ -205,6 +211,8 @@
 {
     ProxyWindow *window =
     ProxyWindow.new;
+    
+    [self.windows addObject:window];
     
     window.backgroundColor =
     UIColor.clearColor;
@@ -384,9 +392,21 @@
     modal.progress = NO;
 }
 
--(void)refreshDismissedItems:(NSArray *)dismissedItems
+-(void)refreshDismissedItems:(NSArray <ModalItem *> *)dismissedItems
 {
     self.progress = YES;
+    
+    NSMutableArray <ProxyWindow *> *dismessed =
+    NSMutableArray.new;
+    
+    // Пробегаем по нашим отображаемым окнам
+    for (ProxyWindow *window in self.windows)
+        // Если контроллер был dissmissed добавим в массив
+        if (window.rootViewController.presentedViewController == NO)
+            [dismessed addObject:window];
+    
+    if (dismessed.count)
+        [self.windows removeObjectsInArray:dismessed];
     
     // Удалим из очереди
     [self.showedItems removeObjectsInArray:dismissedItems];
