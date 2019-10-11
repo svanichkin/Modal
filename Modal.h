@@ -1,6 +1,6 @@
 //
 //  Modal.h
-//  v.1.9
+//  v.2.0
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.
@@ -44,20 +44,30 @@
 //  Если указать этот ключ для UIView являющегося самым нижним слоем контроллера
 //  то все окно станет прозрачным для нажатий.
 //
+//  Контоллер можно получить прямо из сторибоарда, достаточно указать Storyboard ID
+//  название класса. Например у нас в есть класс UIViewController на сторибораде и ему
+//  назначен наш класс MyViewController, тогда в Storiboard ID так же нужно указать
+//  MyViewController. Тогда можно будет создавать контроллеры таким образом:
+//
+//  MyViewController *controller = MyViewController.newFromStoryboard;
+//
+//  Также можно получить контроллер и с другим названием Storyboard ID, например так:
+//
+//  MyViewController *controller = [MyViewController newFromStoryboardWithId:@"Name"];
+//
+//  И сразу показать его так:
+//
+//  [controller show];
+//
+//  Либо с методом выполнения по окончании показа:
+//
+//  [controller showWithCompletion:nil];
+//
+//  [controller showWithOptions:kNilOptions
+//                   completion:nil];
+//
 
 #import <UIKit/UIKit.h>
-
-@interface UIView (ProxyUserInteraction)
-
-@property (nonatomic, assign) IBInspectable BOOL proxyUserInteractionEnabled;
-
-@end
-
-@interface UIViewController (Storyboard)
-
-+(instancetype)newFromStoryboard;
-
-@end
 
 typedef enum
 {
@@ -76,5 +86,23 @@ typedef void(^ModalCompletion)(void);
 +(void)showViewController:(UIViewController  *)viewController
                   options:(ModalOptions       )options
                completion:(ModalCompletion    )completion;
+
+@end
+
+@interface UIView (ProxyUserInteraction)
+
+@property (nonatomic, assign) IBInspectable BOOL proxyUserInteractionEnabled;
+
+@end
+
+@interface UIViewController (Storyboard)
+
++(instancetype)newFromStoryboard;
++(instancetype)newFromStoryboardWithId:(NSString *)storyboardId;
+
+-(void)show;
+-(void)showCompletion:(ModalCompletion)completion;
+-(void)showWithOptions:(ModalOptions   )options
+            completion:(ModalCompletion)completion;
 
 @end

@@ -1,6 +1,6 @@
 //
 //  Modal.m
-//  v.1.9
+//  v.2.0
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.
@@ -36,6 +36,12 @@
 
 +(instancetype)newFromStoryboard
 {
+    return
+    [UIViewController newFromStoryboardWithId:nil];
+}
+
++(instancetype)newFromStoryboardWithId:(NSString *)storyboardId
+{
     UIStoryboard *storyboard =
     [UIStoryboard storyboardWithName:@"Main"
                               bundle:nil];
@@ -53,22 +59,43 @@
         return nil;
     }
     
-    NSString *identifier =
-    NSStringFromClass(self);
+    if (storyboardId == nil)
+        storyboardId =
+        NSStringFromClass(self);
     
     UIViewController *controller =
-    [storyboard instantiateViewControllerWithIdentifier:identifier];
+    [storyboard instantiateViewControllerWithIdentifier:storyboardId];
     
     if (controller == nil)
     {
         if (ENABLE_LOG)
             NSLog(@"\nError in newFromStoryboard. Identifier %@ not found on stroryboard.",
-                  identifier);
+                  storyboardId);
         
         return nil;
     }
     
     return controller;
+}
+
+-(void)show
+{
+    [self showWithOptions:kNilOptions
+               completion:nil];
+}
+
+-(void)showCompletion:(ModalCompletion)completion
+{
+    [self showWithOptions:kNilOptions
+               completion:completion];
+}
+
+-(void)showWithOptions:(ModalOptions   )options
+            completion:(ModalCompletion)completion
+{
+    [Modal showViewController:self
+                      options:options
+                   completion:completion];
 }
 
 @end
