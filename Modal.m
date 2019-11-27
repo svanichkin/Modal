@@ -1,6 +1,6 @@
 //
 //  Modal.m
-//  v.2.0
+//  v.2.2
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.
@@ -261,6 +261,16 @@
         navigationController.navigationBarHidden =
         item.navigationHidden;
         
+        navigationController.modalPresentationStyle =
+        item.controller.modalPresentationStyle;
+        
+        navigationController.providesPresentationContextTransitionStyle =
+        item.controller.providesPresentationContextTransitionStyle;
+        
+        if (@available(iOS 13.0, *))
+            navigationController.modalInPresentation =
+            item.controller.modalInPresentation;
+        
         [window.rootViewController
          presentViewController:navigationController
          animated:item.animated
@@ -430,7 +440,11 @@
     for (ProxyWindow *window in self.windows)
         // Если контроллер был dissmissed добавим в массив
         if (window.rootViewController.presentedViewController == NO)
+        {
+            window.hidden = YES;
+            
             [dismessed addObject:window];
+        }
     
     if (dismessed.count)
         [self.windows removeObjectsInArray:dismessed];

@@ -1,6 +1,6 @@
 //
 //  Modal.h
-//  v.2.0
+//  v.2.2
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.
@@ -15,27 +15,27 @@
 //
 //  Показать контроллер немендленно
 //
-//  [Modal.current showViewController:controller
-//                            options:kNilOptions
-//                         completion:nil];
+//  [Modal showViewController:controller
+//                    options:kNilOptions
+//                 completion:nil];
 //
 //  Показать контроллер, через очередь
 //
-//  [Modal.current showViewController:controller
-//                            options:ModalOptionQuery
-//                         completion:nil];
+//  [Modal showViewController:controller
+//                    options:ModalOptionQuery
+//                 completion:nil];
 //
 //  Показать контроллер немендленно, обернутый в контроллер навигации
 //
-//  [Modal.current showViewController:controller
-//                            options:ModalOptionNavigation
-//                         completion:nil];
+//  [Modal showViewController:controller
+//                    options:ModalOptionNavigation
+//                 completion:nil];
 //
 //  Показать контроллер немендленно, обернутый в контроллер навигации, со скрытым меню
 //
-//  [Modal.current showViewController:controller
-//                            options:ModalOptionNavigation|ModalOptionNavigationHidden
-//                         completion:nil];
+//  [Modal showViewController:controller
+//                    options:ModalOptionNavigation|ModalOptionNavigationHidden
+//                 completion:nil];
 //
 //  Также есть возможность проксировать нажатия view на нижние слои. Например
 //  нам нужно что бы окно которое сейачс открыто было прозрачным для нажатий
