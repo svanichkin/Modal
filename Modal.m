@@ -1,6 +1,6 @@
 //
 //  Modal.m
-//  v.2.2
+//  v.2.4
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.
@@ -37,7 +37,7 @@
 +(instancetype)newFromStoryboard
 {
     return
-    [UIViewController newFromStoryboardWithId:nil];
+    [self newFromStoryboardWithId:nil];
 }
 
 +(instancetype)newFromStoryboardWithId:(NSString *)storyboardId
@@ -134,6 +134,21 @@
 @end
 
 @implementation ProxyWindow
+
+-(instancetype)init
+{
+    if (UIApplication.sharedApplication.connectedScenes.allObjects.firstObject)
+    {
+        self =
+        [super
+         initWithWindowScene:(UIWindowScene *)UIApplication.sharedApplication.connectedScenes.allObjects.firstObject];
+    }
+    
+    else
+        self = [super init];
+    
+    return self;
+}
 
 -(UIView *)hitTest:(CGPoint  )point
          withEvent:(UIEvent *)event
