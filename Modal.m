@@ -1,6 +1,6 @@
 //
 //  Modal.m
-//  v.2.4
+//  v.2.4.1
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.
@@ -137,11 +137,17 @@
 
 -(instancetype)init
 {
-    if (UIApplication.sharedApplication.connectedScenes.allObjects.firstObject)
+    if (@available(iOS 13.0, *))
     {
-        self =
-        [super
-         initWithWindowScene:(UIWindowScene *)UIApplication.sharedApplication.connectedScenes.allObjects.firstObject];
+        if (UIApplication.sharedApplication.connectedScenes.allObjects.firstObject)
+        {
+            self =
+            [super
+             initWithWindowScene:(UIWindowScene *)UIApplication.sharedApplication.connectedScenes.allObjects.firstObject];
+        }
+        
+        else
+            self = [super init];
     }
     
     else
