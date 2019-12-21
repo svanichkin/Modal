@@ -1,6 +1,6 @@
 //
 //  Modal.m
-//  v.2.4
+//  v.2.4.1
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.
