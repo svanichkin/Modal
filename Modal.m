@@ -1,6 +1,6 @@
 //
 //  Modal.m
-//  v.2.4.1
+//  v.2.4.2
 //
 //  Created by Сергей Ваничкин on 12/3/18.
 //  Copyright © 2018 Macflash. All rights reserved.
@@ -393,7 +393,7 @@
                   options:(ModalOptions      )options
                completion:(ModalCompletion   )completion;
 {
-    if (viewController == nil)
+    if (viewController == nil || viewController.isBeingPresented)
         return;
     
     Modal *modal = Modal.current;
