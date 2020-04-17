@@ -1,6 +1,8 @@
 # Modal
 The class allows without thinking about showing any controllers (modal / push) without thinking about the root controller.
 
+This library works on many projects such as Mubert, Morse, etc. Top of App Store.
+
 Show controller immediately
 ```
 [Modal showViewController:controller
