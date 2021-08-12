@@ -2,8 +2,8 @@
 //  Modal.h
 //  v.2.4.2
 //
-//  Created by Сергей Ваничкин on 12/3/18.
-//  Copyright © 2018 Macflash. All rights reserved.
+//  Created by Sergey Vanichkin on 12/3/18.
+//  Copyright © 2018 Sergey Vanichkin. All rights reserved.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
