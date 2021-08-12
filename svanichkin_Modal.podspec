@@ -25,6 +25,7 @@ Pod::Spec.new do |spec|
   #   * Write the description between the DESC delimiters below.
   #   * Finally, don't worry about the indent, CocoaPods strips it!
   spec.description  = <<-DESC
+  The class allows without thinking about showing any controllers (modal / push) without thinking about the root controller.
                    DESC
 
   spec.homepage     = "https://github.com/svanichkin/Modal"
